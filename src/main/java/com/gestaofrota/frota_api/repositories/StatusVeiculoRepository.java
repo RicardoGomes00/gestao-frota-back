@@ -1,13 +1,13 @@
 package com.gestaofrota.frota_api.repositories;
 
-import com.gestaofrota.frota_api.models.Veiculo;
+import com.gestaofrota.frota_api.models.StatusVeiculo;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
 @Repository
-public interface VeiculoRepository extends JpaRepository<Veiculo, Long> {
+public interface StatusVeiculoRepository extends JpaRepository<StatusVeiculo, Short> {
 
-    Optional<Veiculo> findByPlaca(String placa);
+    Optional<StatusVeiculo> findByDescricao(String descricao);
 }

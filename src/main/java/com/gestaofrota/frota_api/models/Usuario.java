@@ -2,8 +2,12 @@ package com.gestaofrota.frota_api.models;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "usuarios")
 public class Usuario {
@@ -15,9 +19,9 @@ public class Usuario {
     @Column(unique = true, nullable = false)
     private String email;
 
-    @Column(name = "senha_hash", nullable = false)
-    private String senha; // O nome do campo é 'senha', mas a coluna é 'senha_hash'
+    @Column(name = "senha", nullable = false)
+    private String senha;
 
-    @Column(name = "tipo_perfil", nullable = false)
+    @Column(name = "tipo_perfil", nullable = false, length = 20)
     private String tipoPerfil;
 }
