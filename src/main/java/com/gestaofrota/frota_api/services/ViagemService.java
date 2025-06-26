@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -114,5 +115,17 @@ public class ViagemService {
 
     public List<Viagem> buscarTodas() {
         return viagemRepository.findAll();
+    }
+
+
+    public List<Viagem> buscarPendentesPorMotorista(Long motoristaId) {
+        List<String> statusParaBuscar = Arrays.asList("AGENDADO", "EM_USO");
+        return viagemRepository.findByMotoristaIdAndStatusDescricaoIn(motoristaId, statusParaBuscar);
+    }
+
+
+    public List<Viagem> buscarHistoricoPorMotorista(Long motoristaId) {
+        List<String> statusParaBuscar = Arrays.asList("FINALIZADO");
+        return viagemRepository.findByMotoristaIdAndStatusDescricaoIn(motoristaId, statusParaBuscar);
     }
 }

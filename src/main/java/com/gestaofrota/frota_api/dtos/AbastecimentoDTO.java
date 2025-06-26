@@ -1,5 +1,6 @@
 package com.gestaofrota.frota_api.dtos;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.gestaofrota.frota_api.models.Abastecimento;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -14,7 +15,10 @@ public class AbastecimentoDTO {
     private Long veiculoId;
     private Long motoristaId;
     private Long viagemId; 
+
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime dataAbastecimento;
+    
     private String tipoCombustivel;
     private BigDecimal valorTotal;
     private Integer quilometragemNoAbastecimento;

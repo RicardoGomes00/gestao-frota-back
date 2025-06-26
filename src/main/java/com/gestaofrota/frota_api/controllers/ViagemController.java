@@ -29,6 +29,20 @@ public class ViagemController {
         return ResponseEntity.ok(dtos);
     }
 
+    @GetMapping("/motorista/{motoristaId}/pendentes")
+    public ResponseEntity<List<ViagemResponseDTO>> buscarPendentesPorMotorista(@PathVariable Long motoristaId) {
+        List<Viagem> viagens = viagemService.buscarPendentesPorMotorista(motoristaId);
+        List<ViagemResponseDTO> dtos = viagens.stream().map(ViagemResponseDTO::new).collect(Collectors.toList());
+        return ResponseEntity.ok(dtos);
+    }
+
+    @GetMapping("/motorista/{motoristaId}/historico")
+    public ResponseEntity<List<ViagemResponseDTO>> buscarHistoricoPorMotorista(@PathVariable Long motoristaId) {
+        List<Viagem> viagens = viagemService.buscarHistoricoPorMotorista(motoristaId);
+        List<ViagemResponseDTO> dtos = viagens.stream().map(ViagemResponseDTO::new).collect(Collectors.toList());
+        return ResponseEntity.ok(dtos);
+    }
+
     @PostMapping("/agendar")
     public ResponseEntity<ViagemResponseDTO> agendarViagem(@RequestBody ViagemDTO dto) {
         Viagem novaViagem = viagemService.agendarViagem(dto);

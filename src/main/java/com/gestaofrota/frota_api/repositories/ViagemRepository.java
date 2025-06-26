@@ -12,5 +12,8 @@ public interface ViagemRepository extends JpaRepository<Viagem, Long> {
 
     @Query("SELECT v FROM Viagem v WHERE v.veiculo.id = :veiculoId AND v.status.descricao IN ('AGENDADO', 'EM_USO')")
     List<Viagem> findViagensAtivasParaVeiculo(Long veiculoId);
+
+    List<Viagem> findByMotoristaIdAndStatusDescricaoIn(Long motoristaId, List<String> statusDescricoes);
+
     
 }

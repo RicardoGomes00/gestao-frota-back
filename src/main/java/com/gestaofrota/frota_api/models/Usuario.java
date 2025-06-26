@@ -23,5 +23,8 @@ public class Usuario {
     private String senha;
 
     @Column(name = "tipo_perfil", nullable = false, length = 20)
-    private String tipoPerfil;
+    private String tipoPerfil; 
+    
+    @OneToOne(mappedBy = "usuario", fetch = FetchType.LAZY)
+    private Motorista motorista;
 }
