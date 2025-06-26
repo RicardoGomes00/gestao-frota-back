@@ -8,7 +8,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-
+import java.util.stream.Collectors;
+    
 @RestController
 @RequestMapping("/api/admin/motoristas") 
 public class MotoristaController {
@@ -20,27 +21,33 @@ public class MotoristaController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Motorista>> listarTodos() {
+    public ResponseEntity<List<MotoristaDTO>> listarTodos() {
         List<Motorista> motoristas = motoristaService.buscarTodos();
-        return ResponseEntity.ok(motoristas);
+        
+        List<MotoristaDTO> dtos = motoristas.stream()
+                .map(MotoristaDTO::new) 
+                .collect(Collectors.toList());
+        
+        return ResponseEntity.ok(dtos);
     }
-
+    
     @GetMapping("/{id}")
-    public ResponseEntity<Motorista> buscarPorId(@PathVariable Long id) {
+    public ResponseEntity<MotoristaDTO> buscarPorId(@PathVariable Long id) {
         Motorista motorista = motoristaService.buscarPorId(id);
-        return ResponseEntity.ok(motorista);
+        return ResponseEntity.ok(new MotoristaDTO(motorista));
     }
 
     @PostMapping
-    public ResponseEntity<Motorista> criarMotorista(@RequestBody MotoristaDTO motoristaDTO) {
+    public ResponseEntity<MotoristaDTO> criarMotorista(@RequestBody MotoristaDTO motoristaDTO) {
         Motorista novoMotorista = motoristaService.createMotorista(motoristaDTO);
-        return new ResponseEntity<>(novoMotorista, HttpStatus.CREATED);
+        return new ResponseEntity<>(new MotoristaDTO(novoMotorista), HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Motorista> atualizarMotorista(@PathVariable Long id, @RequestBody Motorista motoristaDetalhes) {
+    public ResponseEntity<MotoristaDTO> atualizarMotorista(@PathVariable Long id, @RequestBody MotoristaDTO motoristaDetalhes) {
         Motorista motoristaAtualizado = motoristaService.atualizarMotorista(id, motoristaDetalhes);
-        return ResponseEntity.ok(motoristaAtualizado);
+        
+        return ResponseEntity.ok(new MotoristaDTO(motoristaAtualizado));
     }
 
     @PatchMapping("/{id}/inativar")

@@ -6,7 +6,6 @@ import com.gestaofrota.frota_api.models.Usuario;
 import com.gestaofrota.frota_api.repositories.MotoristaRepository;
 import com.gestaofrota.frota_api.repositories.UsuarioRepository;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -18,58 +17,59 @@ public class MotoristaService {
 
     private final MotoristaRepository motoristaRepository;
     private final UsuarioRepository usuarioRepository;
-    private final PasswordEncoder passwordEncoder;
 
-    public MotoristaService(MotoristaRepository motoristaRepository, UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder) {
+    public MotoristaService(MotoristaRepository motoristaRepository, UsuarioRepository usuarioRepository) {
         this.motoristaRepository = motoristaRepository;
         this.usuarioRepository = usuarioRepository;
-        this.passwordEncoder = passwordEncoder;
     }
 
     @Transactional
     public Motorista createMotorista(MotoristaDTO dto) {
-        if (usuarioRepository.findByEmail(dto.getEmail()).isPresent()) {
+        usuarioRepository.findByEmail(dto.getEmail()).ifPresent(u -> {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Este e-mail já está em uso.");
-        }
+        });
 
         Usuario novoUsuario = new Usuario();
         novoUsuario.setEmail(dto.getEmail());
-        novoUsuario.setSenha(passwordEncoder.encode(dto.getSenha())); 
-        novoUsuario.setTipoPerfil(dto.getPerfil()); 
+        novoUsuario.setSenha(dto.getSenha());
+        
+        if (dto.getPerfil() != null && !dto.getPerfil().isEmpty()) {
+            novoUsuario.setTipoPerfil(dto.getPerfil().toLowerCase());
+        } else {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "O campo 'perfil' é obrigatório.");
+        }
+
         Usuario usuarioSalvo = usuarioRepository.save(novoUsuario);
 
         Motorista novoMotorista = new Motorista();
-        novoMotorista.setUsuario(usuarioSalvo); 
+        novoMotorista.setUsuario(usuarioSalvo);
         novoMotorista.setNomeCompleto(dto.getNomeCompleto());
         novoMotorista.setCpf(dto.getCpf());
         novoMotorista.setCnhNumero(dto.getCnhNumero());
         novoMotorista.setCnhValidade(dto.getCnhValidade());
         novoMotorista.setTelefone(dto.getTelefone());
-        
         novoMotorista.setCep(dto.getCep());
         novoMotorista.setLogradouro(dto.getLogradouro());
         novoMotorista.setNumero(dto.getNumero());
         novoMotorista.setBairro(dto.getBairro());
         novoMotorista.setCidade(dto.getCidade());
         novoMotorista.setUf(dto.getUf());
-        
-        novoMotorista.setAtivo(true); 
+        novoMotorista.setAtivo(true);
 
         return motoristaRepository.save(novoMotorista);
     }
 
-
     public List<Motorista> buscarTodos() {
         return motoristaRepository.findAll();
     }
-
+    
     public Motorista buscarPorId(Long id) {
         return motoristaRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Motorista não encontrado"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Motorista não encontrado com o ID: " + id));
     }
 
     @Transactional
-    public Motorista atualizarMotorista(Long id, Motorista motoristaDetalhes) {
+    public Motorista atualizarMotorista(Long id, MotoristaDTO motoristaDetalhes) {
         Motorista motoristaExistente = buscarPorId(id); 
 
         motoristaExistente.setNomeCompleto(motoristaDetalhes.getNomeCompleto());
@@ -78,6 +78,18 @@ public class MotoristaService {
         motoristaExistente.setTelefone(motoristaDetalhes.getTelefone());
         motoristaExistente.setCep(motoristaDetalhes.getCep());
         motoristaExistente.setLogradouro(motoristaDetalhes.getLogradouro());
+        motoristaExistente.setNumero(motoristaDetalhes.getNumero());
+        motoristaExistente.setBairro(motoristaDetalhes.getBairro());
+        motoristaExistente.setCidade(motoristaDetalhes.getCidade());
+        motoristaExistente.setUf(motoristaDetalhes.getUf());
+
+        Usuario usuarioAssociado = motoristaExistente.getUsuario();
+        usuarioAssociado.setEmail(motoristaDetalhes.getEmail());
+        usuarioAssociado.setTipoPerfil(motoristaDetalhes.getPerfil().toLowerCase());
+
+        if (motoristaDetalhes.getSenha() != null && !motoristaDetalhes.getSenha().trim().isEmpty()) {
+            usuarioAssociado.setSenha(motoristaDetalhes.getSenha());
+        }
 
         return motoristaRepository.save(motoristaExistente);
     }

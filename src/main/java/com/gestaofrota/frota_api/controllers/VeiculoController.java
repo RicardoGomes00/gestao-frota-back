@@ -1,6 +1,7 @@
 package com.gestaofrota.frota_api.controllers;
 
-import com.gestaofrota.frota_api.dtos.VeiculoDTO; 
+import com.gestaofrota.frota_api.dtos.VeiculoCreateUpdateDTO; 
+import com.gestaofrota.frota_api.dtos.VeiculoDTO;
 import com.gestaofrota.frota_api.models.Veiculo;
 import com.gestaofrota.frota_api.services.VeiculoService;
 import org.springframework.http.HttpStatus;
@@ -24,8 +25,8 @@ public class VeiculoController {
     @GetMapping
     public ResponseEntity<List<VeiculoDTO>> listarTodos() {
         List<Veiculo> veiculos = veiculoService.buscarTodos();
-        List<VeiculoDTO> veiculosDto = veiculos.stream().map(VeiculoDTO::new).collect(Collectors.toList());
-        return ResponseEntity.ok(veiculosDto);
+        List<VeiculoDTO> dtos = veiculos.stream().map(VeiculoDTO::new).collect(Collectors.toList());
+        return ResponseEntity.ok(dtos);
     }
 
     @GetMapping("/{id}")
@@ -35,14 +36,14 @@ public class VeiculoController {
     }
 
     @PostMapping
-    public ResponseEntity<VeiculoDTO> criarVeiculo(@RequestBody Veiculo veiculo) {
-        Veiculo novoVeiculo = veiculoService.criarVeiculo(veiculo);
+    public ResponseEntity<VeiculoDTO> criarVeiculo(@RequestBody VeiculoCreateUpdateDTO dto) {
+        Veiculo novoVeiculo = veiculoService.criarVeiculo(dto);
         return new ResponseEntity<>(new VeiculoDTO(novoVeiculo), HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<VeiculoDTO> atualizarVeiculo(@PathVariable Long id, @RequestBody Veiculo veiculoDetalhes) {
-        Veiculo veiculoAtualizado = veiculoService.atualizarVeiculo(id, veiculoDetalhes);
+    public ResponseEntity<VeiculoDTO> atualizarVeiculo(@PathVariable Long id, @RequestBody VeiculoCreateUpdateDTO dto) {
+        Veiculo veiculoAtualizado = veiculoService.atualizarVeiculo(id, dto);
         return ResponseEntity.ok(new VeiculoDTO(veiculoAtualizado));
     }
     

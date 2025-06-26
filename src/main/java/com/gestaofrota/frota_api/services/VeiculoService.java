@@ -1,5 +1,6 @@
 package com.gestaofrota.frota_api.services;
 
+import com.gestaofrota.frota_api.dtos.VeiculoCreateUpdateDTO; 
 import com.gestaofrota.frota_api.models.StatusVeiculo;
 import com.gestaofrota.frota_api.models.Veiculo;
 import com.gestaofrota.frota_api.repositories.StatusVeiculoRepository;
@@ -10,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class VeiculoService {
@@ -32,25 +34,43 @@ public class VeiculoService {
     }
 
     @Transactional
-    public Veiculo criarVeiculo(Veiculo veiculo) {
-        if (veiculoRepository.findByPlaca(veiculo.getPlaca()).isPresent()) {
+    public Veiculo criarVeiculo(VeiculoCreateUpdateDTO dto) {
+        veiculoRepository.findByPlaca(dto.getPlaca()).ifPresent(v -> {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Já existe um veículo com esta placa.");
-        }
-        return veiculoRepository.save(veiculo);
+        });
+
+        StatusVeiculo status = statusVeiculoRepository.findByDescricao(dto.getStatus())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Status inválido: " + dto.getStatus()));
+
+        Veiculo novoVeiculo = new Veiculo();
+        novoVeiculo.setPlaca(dto.getPlaca());
+        novoVeiculo.setModelo(dto.getModelo());
+        novoVeiculo.setTipo(dto.getTipo());
+        novoVeiculo.setAno(dto.getAno());
+        novoVeiculo.setQuilometragemAtual(dto.getQuilometragemAtual());
+        novoVeiculo.setStatus(status);
+
+        return veiculoRepository.save(novoVeiculo);
     }
 
     @Transactional
-    public Veiculo atualizarVeiculo(Long id, Veiculo veiculoDetalhes) {
+    public Veiculo atualizarVeiculo(Long id, VeiculoCreateUpdateDTO dto) {
         Veiculo veiculoExistente = buscarPorId(id);
 
-        veiculoExistente.setPlaca(veiculoDetalhes.getPlaca());
-        veiculoExistente.setModelo(veiculoDetalhes.getModelo());
-        veiculoExistente.setTipo(veiculoDetalhes.getTipo());
-        veiculoExistente.setAno(veiculoDetalhes.getAno());
-        
-        veiculoExistente.setQuilometragemAtual(veiculoDetalhes.getQuilometragemAtual());
-        
-        veiculoExistente.setStatus(veiculoDetalhes.getStatus());
+        Optional<Veiculo> veiculoComMesmaPlaca = veiculoRepository.findByPlaca(dto.getPlaca());
+        if (veiculoComMesmaPlaca.isPresent() && !veiculoComMesmaPlaca.get().getId().equals(id)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "A placa " + dto.getPlaca() + " já está em uso por outro veículo.");
+        }
+
+        StatusVeiculo novoStatus = statusVeiculoRepository.findByDescricao(dto.getStatus())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Status inválido: " + dto.getStatus()));
+
+        veiculoExistente.setPlaca(dto.getPlaca());
+        veiculoExistente.setModelo(dto.getModelo());
+        veiculoExistente.setTipo(dto.getTipo());
+        veiculoExistente.setAno(dto.getAno());
+        veiculoExistente.setQuilometragemAtual(dto.getQuilometragemAtual());
+        veiculoExistente.setStatus(novoStatus);
 
         return veiculoRepository.save(veiculoExistente);
     }
@@ -58,7 +78,7 @@ public class VeiculoService {
     @Transactional
     public Veiculo atualizarStatus(Long id, String novoStatusDescricao) {
         Veiculo veiculoExistente = buscarPorId(id);
-
+        
         StatusVeiculo novoStatus = statusVeiculoRepository.findByDescricao(novoStatusDescricao)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Status inválido: " + novoStatusDescricao));
         

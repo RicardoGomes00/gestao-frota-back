@@ -37,7 +37,12 @@ public class ViagemService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Motorista não encontrado"));
 
         if (!"Disponível".equals(veiculo.getStatus().getDescricao())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Veículo não está disponível para agendamento.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Veículo não está disponível. Status atual: " + veiculo.getStatus().getDescricao());
+        }
+        
+        List<Viagem> viagensAtivas = viagemRepository.findViagensAtivasParaVeiculo(veiculo.getId());
+        if (!viagensAtivas.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Este veículo já possui uma viagem agendada ou em andamento e não pode ser agendado novamente.");
         }
         
         StatusViagem statusAgendado = statusViagemRepository.findByDescricao("AGENDADO")
